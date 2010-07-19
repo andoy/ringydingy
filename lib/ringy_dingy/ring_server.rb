@@ -64,7 +64,7 @@ class RingyDingy::RingServer
     services = {}
 
     RF.lookup_ring do |ts|
-      services[ts.__drburi] = ts.read_all [:name, nil, DRbObject, nil]
+      services[ts.__drburi] = ts.read_all [:name, nil, DRbObject, nil, nil]
     end
 
     return services
@@ -224,8 +224,8 @@ class RingyDingy::RingServer
   def enable_activity_logging
     log 'registration and expiration logging enabled'
 
-    @registrations = @ts.notify 'write', [:name, nil, DRbObject, nil]
-    @expirations = @ts.notify 'delete', [:name, nil, DRbObject, nil]
+    @registrations = @ts.notify 'write', [:name, nil, DRbObject, nil, nil]
+    @expirations = @ts.notify 'delete', [:name, nil, DRbObject, nil, nil]
 
     Thread.start do
       @registrations.each do |(_,t)|

@@ -32,7 +32,7 @@ class RingyDingy
   # RingyDingy service identifier.  Use this to distinguish between
   # RingyDingys registering the same service.
 
-  attr_reader :identifier
+  attr_accessor :identifier
 
   ##
   # RingyDingy run loop thread.
@@ -51,7 +51,8 @@ class RingyDingy
   def initialize(object, service = :RingyDingy, name = nil)
     DRb.start_service unless DRb.primary_server
 
-    @identifier = [Socket.gethostname.downcase, $PID, name].compact.join '_'
+    @host = Socket.gethostname.downcase
+    @identifier = [@host, $PID, name].compact.join '_'
     @object = object
     @service = service || :RingyDingy
 
@@ -68,7 +69,7 @@ class RingyDingy
   # Registers this service with the primary Rinda::RingServer.
 
   def register
-    ring_server.write [:name, @service, DRbObject.new(@object), @identifier],
+    ring_server.write [:name, @service, DRbObject.new(@object), @identifier, @host],
                       @renewer
     return nil
   end
@@ -78,7 +79,7 @@ class RingyDingy
   # RingServer can't be found or contacted, returns false.
 
   def registered?
-    registrations = ring_server.read_all [:name, @service, nil, @identifier]
+    registrations = ring_server.read_all [:name, @service, nil, @identifier, @host]
     registrations.any? { |registration| registration[2] == @object }
   rescue DRb::DRbConnError
     @ring_server = nil
